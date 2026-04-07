@@ -1,5 +1,8 @@
 from openenv.core import EnvClient
-from .models import CodeForgeAction, CodeForgeObservation, CodeForgeState
+try:
+    from .models import CodeForgeAction, CodeForgeObservation, CodeForgeState
+except (ImportError, ValueError):
+    from models import CodeForgeAction, CodeForgeObservation, CodeForgeState
 
 class CodeForgeProEnv(EnvClient[CodeForgeAction, CodeForgeObservation, CodeForgeState]):
     """Client for interacting with CodeForgeProEnvironment"""

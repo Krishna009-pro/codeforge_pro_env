@@ -110,6 +110,17 @@ async with CodeForgeProEnv(base_url="http://localhost:8000") as env:
     new_obs = await env.step(action)
 ```
 
+### 📊 Running Evaluation
+To run the automated inference evaluation suite (as required for the hackathon baseline):
+
+```powershell
+# Run against a local server (default)
+python inference.py --episodes 5
+
+# Run against the deployed Hugging Face Space
+python inference.py --url https://krishnapatil999-codeforge-pro-env.hf.space --episodes 5
+```
+
 ---
 
 ## 📊 Baseline Performance Benchmark
