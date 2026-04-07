@@ -1,0 +1,9 @@
+spec_version: 1
+name: codeforge_pro_env
+type: space
+runtime: fastapi
+app: server.app:app
+port: 8000
+description: Real-world software engineering RL environment (code review → pipeline debugging). Easy→Expert tasks with dense rewards and programmatic graders.
+tags: ["openenv", "coding", "rl", "agentic"]
+version: "1.0.0"
