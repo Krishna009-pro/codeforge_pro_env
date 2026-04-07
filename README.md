@@ -114,6 +114,9 @@ async with CodeForgeProEnv(base_url="http://localhost:8000") as env:
 To run the automated inference evaluation suite (as required for the hackathon baseline):
 
 ```powershell
+# Set your API token (required for LLM inference)
+$env:HF_TOKEN = "your_huggingface_token_here"
+
 # Run against a local server (default)
 python inference.py --episodes 5
 
