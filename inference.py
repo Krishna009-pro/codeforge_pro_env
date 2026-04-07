@@ -16,10 +16,11 @@ async def run_episode(env: CodeForgeProEnv, task_id: str = None):
     """
     Run a single episode with a basic heuristic policy.
     """
-    obs = await env.reset(task_id=task_id)
+    result = await env.reset(task_id=task_id)
+    obs = result.observation
     total_reward = 0
     steps = 0
-    done = False
+    done = result.done
     
     print(f"\n--- Episode Start: {obs.task_id} ({obs.difficulty}) ---")
     print(f"Goal: {obs.message}")
@@ -74,7 +75,7 @@ async def main():
         avg_reward = sum(r["reward"] for r in results) / len(results)
         
         print("\n" + "="*40)
-        print("📊 INFERENCE SUMMARY")
+        print("INFERENCE SUMMARY")
         print("="*40)
         print(f"Total Episodes: {len(results)}")
         print(f"Success Rate:   {success_count/len(results)*100:.1f}%")
@@ -85,5 +86,5 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\nERROR: {e}")
         print("Ensure the server is running or the URL is correct.")
