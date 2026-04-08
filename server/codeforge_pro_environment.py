@@ -22,35 +22,64 @@ TASK_DATA = {
         "desc": "Review small PR for style/security",
         "subgoals": ["identified_security_issue", "added_style_comment"],
         "files": {"main.py": "def upload(f): pass # TODO: check secure\nprint('hello')"},
-        "gt": {"comments": 3, "security": True}
+        "gt": {"comments": 3, "security": True},
+        "enabled": True
     },
     "medium_triage": {
         "difficulty": Difficulty.MEDIUM,
         "desc": "Triage IndexError in data loader",
         "subgoals": ["found_index_error_line", "isolated_data_source"],
         "files": {"loader.py": "data = [1,2,3]\ndef get(i): return data[i]"},
-        "gt": {"root_cause": "off_by_one"}
+        "gt": {"root_cause": "off_by_one"},
+        "enabled": True
     },
     "hard_pipeline": {
         "difficulty": Difficulty.HARD,
         "desc": "Fix failing ETL pipeline (CSV/JSON)",
         "subgoals": ["parsed_csv", "detected_encoding_error", "fixed_transformation"],
         "files": {"pipeline.py": "def process(): read_csv('data.csv', encoding='ascii')"},
-        "gt": {"fixed_files": 2}
+        "gt": {"fixed_files": 2},
+        "enabled": True
     },
     "expert_refactor": {
         "difficulty": Difficulty.EXPERT,
         "desc": "Refactor legacy async code + add tests",
         "subgoals": ["converted_to_async", "handled_concurrency", "tests_passing"],
         "files": {"legacy.py": "def slow(): time.sleep(1)\ndef main(): [slow() for _ in range(5)]"},
-        "gt": {"tests_pass": True}
+        "gt": {"tests_pass": True},
+        "enabled": True
     },
     "pro_deploy": {
         "difficulty": Difficulty.EXPERT,
         "desc": "Simulate safe deployment with rollback",
         "subgoals": ["checked_health", "staged_blue_green", "verified_metrics"],
         "files": {"deploy.sh": "helm upgrade --install my-app ./charts"},
-        "gt": {"safe_deploy": True}
+        "gt": {"safe_deploy": True},
+        "enabled": True
+    },
+    "security_audit": {
+        "difficulty": Difficulty.MEDIUM,
+        "desc": "Audit config for hardcoded secrets",
+        "subgoals": ["identified_secret", "removed_plaintext", "updated_env_var"],
+        "files": {"config.json": '{"db_pass": "admin123", "api_key": "sk-12345"}'},
+        "gt": {"secrets_found": 2},
+        "enabled": True
+    },
+    "ci_pipeline_fix": {
+        "difficulty": Difficulty.HARD,
+        "desc": "Fix broken GitHub Action YAML syntax",
+        "subgoals": ["validated_yaml", "fixed_indentation", "set_correct_node_version"],
+        "files": {".github/workflows/main.yml": "name: CI\non: push\njobs:\n  build: runs-on: ubuntu-latest\n  steps: - uses: actions/checkout@v2"},
+        "gt": {"valid_yaml": True},
+        "enabled": True
+    },
+    "api_migration": {
+        "difficulty": Difficulty.EXPERT,
+        "desc": "Migrate from v1 to v2 internal API",
+        "subgoals": ["found_legacy_calls", "implemented_v2_wrapper", "tested_rollback"],
+        "files": {"app.py": "from internal_v1 import Client\nc = Client()\nc.fetch_data()"},
+        "gt": {"migrated_to_v2": True},
+        "enabled": True
     },
 }
 
@@ -181,3 +210,7 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
     @property
     def state(self) -> CodeForgeState:
         return self._state
+
+    @property
+    def tasks(self) -> list[str]:
+        return list(TASK_DATA.keys())

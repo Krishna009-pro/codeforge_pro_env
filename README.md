@@ -55,15 +55,18 @@ The environment provides a rich multimodal state:
 
 ## 📋 Task Registry & Sub-goals
 
-We provide 5 core tasks, each with specific sub-goals that provide intermediate rewards.
+We provide 8 core tasks, each with specific sub-goals that provide intermediate rewards.
 
 | Task ID | Level | Motivation | Key Sub-goals |
 | :--- | :--- | :--- | :--- |
 | `easy_review` | **Easy** | Fine-tuning style/security awareness. | `identified_security_issue`, `added_style_comment` |
 | `medium_triage` | **Medium** | Logical reasoning & bug isolation. | `found_index_error_line`, `isolated_data_source` |
+| `security_audit` | **Medium** | Discovering hardcoded secrets. | `identified_secret`, `removed_plaintext`, `updated_env` |
 | `hard_pipeline` | **Hard** | Complex system interaction (ETL). | `parsed_csv`, `encoding_error_fixed`, `transformed` |
+| `ci_pipeline_fix` | **Hard** | Infrastructure as Code (IaC) debugging. | `validated_yaml`, `fixed_indentation`, `node_version_set` |
 | `expert_refactor` | **Expert** | Deep architectural modernization. | `converted_to_async`, `handled_concurrency`, `tests_passing` |
 | `pro_deploy` | **Expert** | High-stakes operational safety. | `health_checked`, `staged_rollout`, `metrics_verified` |
+| `api_migration` | **Expert** | Major version API transition. | `found_legacy`, `implemented_v2`, `tested_rollback` |
 
 ---
 
