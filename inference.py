@@ -78,14 +78,15 @@ Decide your next action. Use JSON format."""
         return CodeForgeAction(action_type=ActionType.REVIEW_CODE, payload={"comment": "Analyzing structure..."})
 
 async def run_episode(env: CodeForgeProEnv, llm: OpenAIClient, task_id: str = None):
-    print(f"\n--- Episode Start ---")
+    print(f"\n--- Episode Start ---", flush=True)
     result = await env.reset(task_id=task_id)
     obs = result.observation
     total_reward = 0
     steps = 0
     done = result.done
     
-    print(f"Goal: {obs.message}")
+    print(f"[START] task={obs.task_id}", flush=True)
+    print(f"Goal: {obs.message}", flush=True)
 
     while not done and steps < 10: # Limit steps for inference baseline
         action = await agent_policy(llm, obs)
@@ -95,13 +96,20 @@ async def run_episode(env: CodeForgeProEnv, llm: OpenAIClient, task_id: str = No
         done = result.done
         steps += 1
         
-        print(f"Step {steps}: Action={action.action_type.value}, Reward={result.reward:.4f}, Progress={obs.progress:.2f}")
+        print(f"Step {steps}: Action={action.action_type.value}, Reward={result.reward:.4f}, Progress={obs.progress:.2f}", flush=True)
+        print(f"[STEP] step={steps} reward={result.reward:.4f}", flush=True)
+
+    # Ensure score is strictly between 0 and 1 per validator requirements
+    final_score = max(0.0001, min(0.9999, float(obs.progress)))
+    
+    print(f"[END] task={obs.task_id} score={final_score:.4f} steps={steps}", flush=True)
 
     return {
         "task_id": obs.task_id,
         "reward": total_reward,
         "steps": steps,
-        "success": obs.progress >= 1.0
+        "success": obs.progress >= 1.0,
+        "score": final_score
     }
 
 async def main():
