@@ -120,14 +120,28 @@ async def main():
     parser.add_argument("--episodes", type=int, default=1, help="Number of episodes")
     args = parser.parse_args()
 
-    # Read API Key
-    api_key = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY")
+    # Read API environment variables
+    api_base = os.getenv("API_BASE_URL")
+    api_key = os.getenv("API_KEY") or os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY")
+
     if not api_key:
-        print("Error: Missing API key. Please set HF_TOKEN or OPENAI_API_KEY environment variable.")
+        print("Error: Missing API key. Please set API_KEY, HF_TOKEN, or OPENAI_API_KEY.", file=sys.stderr)
         return
 
     # Initialize LLM Client
-    if args.provider == "huggingface":
+    if api_base:
+        # Hackathon Proxy Mode
+        print(f"Using Hackathon Proxy: {api_base}", file=sys.stderr)
+        # We manually configure OpenAIClient to use the exact provided base URL
+        llm = OpenAIClient(
+            endpoint="http://temp", # Placeholder, will be overridden
+            port=80,
+            model=args.model,
+            api_key=api_key,
+            system_prompt=SYSTEM_PROMPT
+        )
+        llm._client.base_url = api_base
+    elif args.provider == "huggingface":
         # Hugging Face Inference API is OpenAI-compatible at this endpoint
         llm = OpenAIClient(
             endpoint="https://api-inference.huggingface.co",
@@ -139,8 +153,8 @@ async def main():
     else:
         llm = create_llm_client("openai", model=args.model, api_key=api_key, system_prompt=SYSTEM_PROMPT)
 
-    print(f"Starting LLM-based inference against {args.url}")
-    print(f"Provider: {args.provider}, Model: {args.model}")
+    print(f"Starting LLM-based inference against {args.url}", file=sys.stderr)
+    print(f"Provider: {args.provider if not api_base else 'hackathon-proxy'}, Model: {args.model}", file=sys.stderr)
 
     async with CodeForgeProEnv(base_url=args.url) as env:
         results = []
