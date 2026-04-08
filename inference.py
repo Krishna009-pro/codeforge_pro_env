@@ -1,4 +1,5 @@
 import asyncio
+import sys
 import argparse
 import os
 import json
@@ -9,7 +10,6 @@ try:
     from codeforge_pro_env import CodeForgeProEnv, CodeForgeAction, ActionType
     from openenv.core.llm_client import OpenAIClient, create_llm_client
 except ImportError:
-    import sys
     from pathlib import Path
     sys.path.append(str(Path(__file__).parent))
     from client import CodeForgeProEnv
@@ -68,17 +68,17 @@ Decide your next action. Use JSON format."""
             clean_json = clean_json.split("```")[-1].split("```")[0].strip()
             
         data = json.loads(clean_json)
-        print(f"Agent Thought: {data.get('thought', 'No reasoning provided')}")
+        print(f"Agent Thought: {data.get('thought', 'No reasoning provided')}", file=sys.stderr, flush=True)
         return CodeForgeAction(
             action_type=ActionType(data["action_type"]),
             payload=data.get("payload", {})
         )
     except Exception as e:
-        print(f"Warning: LLM reasoning failed ({e}). Falling back to style review.")
+        print(f"Warning: LLM reasoning failed ({e}). Falling back to style review.", file=sys.stderr, flush=True)
         return CodeForgeAction(action_type=ActionType.REVIEW_CODE, payload={"comment": "Analyzing structure..."})
 
 async def run_episode(env: CodeForgeProEnv, llm: OpenAIClient, task_id: str = None):
-    print(f"\n--- Episode Start ---", flush=True)
+    print(f"\n--- Episode Start ---", file=sys.stderr, flush=True)
     result = await env.reset(task_id=task_id)
     obs = result.observation
     total_reward = 0
@@ -86,7 +86,7 @@ async def run_episode(env: CodeForgeProEnv, llm: OpenAIClient, task_id: str = No
     done = result.done
     
     print(f"[START] task={obs.task_id}", flush=True)
-    print(f"Goal: {obs.message}", flush=True)
+    print(f"Goal: {obs.message}", file=sys.stderr, flush=True)
 
     while not done and steps < 10: # Limit steps for inference baseline
         action = await agent_policy(llm, obs)
@@ -96,7 +96,7 @@ async def run_episode(env: CodeForgeProEnv, llm: OpenAIClient, task_id: str = No
         done = result.done
         steps += 1
         
-        print(f"Step {steps}: Action={action.action_type.value}, Reward={result.reward:.4f}, Progress={obs.progress:.2f}", flush=True)
+        print(f"Step {steps}: Action={action.action_type.value}, Reward={result.reward:.4f}, Progress={obs.progress:.2f}", file=sys.stderr, flush=True)
         print(f"[STEP] step={steps} reward={result.reward:.4f}", flush=True)
 
     # Ensure score is strictly between 0 and 1 per validator requirements
@@ -152,13 +152,13 @@ async def main():
         success_count = sum(1 for r in results if r["success"])
         avg_reward = sum(r["reward"] for r in results) / len(results)
         
-        print("\n" + "="*40)
-        print("BASELINE INFERENCE SUMMARY")
-        print("="*40)
-        print(f"Total Episodes: {len(results)}")
-        print(f"Success Rate:   {success_count/len(results)*100:.1f}%")
-        print(f"Avg. Reward:    {avg_reward:.4f}")
-        print("="*40)
+        print("\n" + "="*40, file=sys.stderr, flush=True)
+        print("BASELINE INFERENCE SUMMARY", file=sys.stderr, flush=True)
+        print("="*40, file=sys.stderr, flush=True)
+        print(f"Total Episodes: {len(results)}", file=sys.stderr, flush=True)
+        print(f"Success Rate:   {success_count/len(results)*100:.1f}%", file=sys.stderr, flush=True)
+        print(f"Avg. Reward:    {avg_reward:.4f}", file=sys.stderr, flush=True)
+        print("="*40, file=sys.stderr, flush=True)
 
 if __name__ == "__main__":
     asyncio.run(main())
