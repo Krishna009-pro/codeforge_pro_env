@@ -15,6 +15,10 @@ except (ImportError, ValueError):
     ActionType = models.ActionType
     CodeForgeConfig = config.CodeForgeConfig
 import random, json
+try:
+    from . import graders
+except (ImportError, ValueError):
+    import graders
 
 TASK_DATA = {
     "easy_review": {
@@ -174,14 +178,23 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
         return base
 
     def _grader(self, task_id: str, final_action: CodeForgeAction) -> float:
-        gt = TASK_DATA[task_id]["gt"]
-        score = 0.0
-        payload = final_action.payload
-        # Simplified grading logic
-        overlap = len(set(str(payload).lower().split()) & set(str(gt).lower().split())) / max(len(str(gt).split()), 1)
-        score += 0.5 * overlap
-        score += 0.5 * (len(self._state.completed_subgoals) / len(TASK_DATA[task_id]["subgoals"]))
-        return min(1.0, score)
+        # Map task IDs to standalone grader functions
+        grader_map = {
+            "easy_review": graders.grade_easy_review,
+            "medium_triage": graders.grade_medium_triage,
+            "security_audit": graders.grade_security_audit,
+            "hard_pipeline": graders.grade_hard_pipeline,
+            "ci_pipeline_fix": graders.grade_ci_pipeline_fix,
+            "expert_refactor": graders.grade_expert_refactor,
+            "pro_deploy": graders.grade_pro_deploy,
+            "api_migration": graders.grade_api_migration,
+        }
+        
+        grader_func = grader_map.get(task_id)
+        if not grader_func:
+            return 0.0
+            
+        return grader_func(final_action.payload, self._state.completed_subgoals)
 
     def _is_complete(self, action: CodeForgeAction) -> bool:
         return (action.action_type == ActionType.SUBMIT_FIX and len(self._state.completed_subgoals) >= 2) or \
