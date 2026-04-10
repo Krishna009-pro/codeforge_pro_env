@@ -49,3 +49,8 @@ tasks:
     description: "Migrate from v1 to v2 internal API"
     difficulty: "expert"
     grader: "server.graders:grade_api_migration"
+  - id: "doc_update"
+    name: "Easy: Documentation Update"
+    description: "Fix broken links and outdated versions in README"
+    difficulty: "easy"
+    grader: "server.graders:grade_doc_update"

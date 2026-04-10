@@ -93,6 +93,15 @@ TASK_DATA = {
         "gt": {"migrated_to_v2": True},
         "enabled": True
     },
+    "doc_update": {
+        "name": "Easy: Documentation Update",
+        "difficulty": Difficulty.EASY,
+        "desc": "Fix broken links and outdated versions in README",
+        "subgoals": ["identified_broken_link", "fixed_broken_link"],
+        "files": {"README.md": "# Docs\nCheck out [this link](http://broken-link.com) for details. Version 0.1"},
+        "gt": {"broken_link_fixed": True},
+        "enabled": True
+    },
 }
 
 class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation, CodeForgeState]):

@@ -49,3 +49,7 @@ def grade_pro_deploy(payload: dict, completed_subgoals: list[str]) -> float:
 def grade_api_migration(payload: dict, completed_subgoals: list[str]) -> float:
     gt = {"migrated_to_v2": True}
     return base_grade(payload, completed_subgoals, 3, gt)
+
+def grade_doc_update(payload: dict, completed_subgoals: list[str]) -> float:
+    gt = {"broken_link_fixed": True}
+    return base_grade(payload, completed_subgoals, 2, gt)

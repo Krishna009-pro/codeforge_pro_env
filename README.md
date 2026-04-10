@@ -68,6 +68,7 @@ We provide 8 core tasks, each with specific sub-goals that provide intermediate 
 | Task ID | Level | Motivation | Key Sub-goals |
 | :--- | :--- | :--- | :--- |
 | `easy_review` | **Easy** | Fine-tuning style/security awareness. | `identified_security_issue`, `added_style_comment` |
+| `doc_update` | **Easy** | Fixing broken links & documentation metadata. | `identified_broken_link`, `fixed_broken_link` |
 | `medium_triage` | **Medium** | Logical reasoning & bug isolation. | `found_index_error_line`, `isolated_data_source` |
 | `security_audit` | **Medium** | Discovering hardcoded secrets. | `identified_secret`, `removed_plaintext`, `updated_env` |
 | `hard_pipeline` | **Hard** | Complex system interaction (ETL). | `parsed_csv`, `encoding_error_fixed`, `transformed` |
