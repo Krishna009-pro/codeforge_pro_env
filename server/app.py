@@ -26,6 +26,15 @@ app = create_app(
     max_concurrent_envs=1,
 )
 
+# Startup verification: Ensure tasks are discoverable at the class level
+try:
+    tasks = CodeForgeProEnvironment.list_tasks()
+    print(f"DEBUG: Discovery successful. Detected {len(tasks)} tasks.")
+    for t in tasks:
+        print(f" - [TASK] ID={t['id']}, Grader={t.get('grader', 'None')}")
+except Exception as e:
+    print(f"DEBUG: Discovery failed! Error: {e}")
+
 
 def main(host: str = "0.0.0.0", port: int = 8000):
     """Entry point for direct execution."""

@@ -205,6 +205,7 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
             "expert_refactor": graders.grade_expert_refactor,
             "pro_deploy": graders.grade_pro_deploy,
             "api_migration": graders.grade_api_migration,
+            "doc_update": graders.grade_doc_update,
         }
         
         grader_func = grader_map.get(task_id)
@@ -251,8 +252,9 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
     def current_state(self) -> CodeForgeState:
         return self._state
 
-    @property
-    def tasks(self) -> list[dict]:
+    @classmethod
+    def list_tasks(cls) -> list[dict]:
+        """Provides task metadata for discovery."""
         return [
             {
                 "id": tid,
@@ -263,3 +265,13 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
             }
             for tid, data in TASK_DATA.items()
         ]
+
+    @property
+    def tasks(self) -> list[dict]:
+        """Standard property for instance access."""
+        return self.list_tasks()
+    
+    @classmethod
+    def get_tasks(cls) -> list[dict]:
+        """Alternative static access for some validator versions."""
+        return cls.list_tasks()
