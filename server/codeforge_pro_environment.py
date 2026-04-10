@@ -136,13 +136,13 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
     def step(self, action: CodeForgeAction, **kwargs) -> CodeForgeObservation:
         if not self._state: raise ValueError("Reset required.")
         
-        # 1. Immediate Efficiency Penalty
-        step_penalty = -0.01 * self.config.reward_scale
+        # 1. Aggressive Step Penalty (Tripled to discourage wandering)
+        step_penalty = -0.03 * self.config.reward_scale
         
         # 2. Redundancy Penalty
-        redundancy_penalty = -0.05 if action.action_type == self._state.last_action_type else 0.0
+        redundancy_penalty = -0.1 if action.action_type == self._state.last_action_type else 0.0
         
-        # 3. Dense Rewards (Action-based)
+        # 3. Dense Rewards (Action-based) - Removed 'free' rewards for idle actions
         base_reward = self._compute_dense_reward(action)
         
         # 4. Sub-goal tracking & rewards
@@ -183,14 +183,14 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
                 keyword = sg.split("_")[0] 
                 if keyword in payload_str or (action.action_type == ActionType.RUN_TEST and "test" in sg):
                     self._state.completed_subgoals.append(sg)
-                    reward += 0.2  # Significant reward for sub-goal
+                    reward += 0.1  # Sparser sub-goal reward
         return reward
 
     def _compute_dense_reward(self, action: CodeForgeAction) -> float:
-        base = 0.02 # Lowered base to favor subgoals
-        if action.action_type in [ActionType.REVIEW_CODE, ActionType.RUN_TEST]: base += 0.03
+        # Sparsified dense rewards - removed free action-type based rewards
+        base = 0.0
         payload_str = json.dumps(action.payload).lower()
-        if self.config.enable_safety_penalties and any(x in payload_str for x in ["rm -rf", "delete", "os.remove", "exec("]): return -0.5
+        if self.config.enable_safety_penalties and any(x in payload_str for x in ["rm -rf", "delete", "os.remove", "exec("]): return -1.0 # Doubled safety penalty
         if "fix" in payload_str or "corrected" in payload_str: base += 0.05
         return base
 
@@ -211,10 +211,17 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
         if not grader_func:
             return 0.0
             
-        return grader_func(final_action.payload, self._state.completed_subgoals)
+        return grader_func(
+            final_action.payload, 
+            self._state.completed_subgoals, 
+            steps=self._state.steps_taken,
+            max_steps=self.max_steps
+        )
 
     def _is_complete(self, action: CodeForgeAction) -> bool:
-        return (action.action_type == ActionType.SUBMIT_FIX and len(self._state.completed_subgoals) >= 2) or \
+        task_info = TASK_DATA[self.current_task]
+        # REQUIRED: 100% subgoal completion for a SUBMIT_FIX to be valid
+        return (action.action_type == ActionType.SUBMIT_FIX and len(self._state.completed_subgoals) >= len(task_info["subgoals"])) or \
                (self._state.steps_taken >= self.max_steps)
 
     def _next_observation(self, action: CodeForgeAction) -> CodeForgeObservation:
