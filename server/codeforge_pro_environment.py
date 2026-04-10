@@ -228,8 +228,11 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
             step_count=self._state.steps_taken
         )
 
-    @property
     def state(self) -> CodeForgeState:
+        return self._state
+
+    @property
+    def current_state(self) -> CodeForgeState:
         return self._state
 
     @property

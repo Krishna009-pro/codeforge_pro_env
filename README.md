@@ -11,9 +11,10 @@
 
 ## 🎯 Motivation & Overview
 Traditional coding benchmarks often focus on isolated snippets (LeetCode-style). **CodeForge Pro** shifts the focus to **Systematic Engineering**:
+- **Real-World Fidelity**: Simulates tasks engineers actually perform, such as CI/CD debugging, security audits, and API migrations.
 - **Context-Aware Triage**: Agents must navigate multiple files to find the root cause of failures.
-- **Refactoring & Modernization**: Converting legacy sync code to async/await patterns.
-- **Safe Operations**: Reward signals heavily penalize dangerous or destructive system commands (e.g., `rm -rf`).
+- **Modernization**: Focuses on modern patterns like async/await and Blue-Green deployments.
+- **Safe Operations**: Reward signals heavily penalize dangerous system commands (e.g., `rm -rf`).
 - **Dense Progress Feedback**: Uses sub-goal tracking to provide high-resolution gradients for RL training.
 
 ### 🏗️ Environment Architecture
@@ -40,16 +41,23 @@ graph TD
 ## 🕹️ Spaces & Definitions
 
 ### 🔹 Action Space (`CodeForgeAction`)
-Agents interact via structured actions:
-- **`action_type`**: Enum (e.g., `REVIEW_CODE`, `TRIAGE_BUG`, `RUN_TEST`, `SUBMIT_FIX`).
-- **`payload`**: A dictionary containing action-specific data (e.g., `{"comments": ["..."], "bug_id": "..."}`).
+Agents interact via structured, typed actions defining the intent and the specific payload:
+- **`action_type`**: An `ActionType` enum (e.g., `REVIEW_CODE`, `TRIAGE_BUG`, `RUN_TEST`, `SUBMIT_FIX`).
+- **`payload`**: A flexible `dict` containing the parameters for the action:
+    - `thought`: (Optional) The reasoning behind the action.
+    - `bug_id` / `test_path`: Logical identifiers for the task targets.
+    - `code_patch`: (For SUBMIT_FIX) The proposed changes.
 
 ### 🔹 Observation Space (`CodeForgeObservation`)
-The environment provides a rich multimodal state:
-- **`file_snapshot`**: A JSON-encoded view of relevant source files.
-- **`console_output`**: Real-time feedback from linter, tests, or system logs.
-- **`progress`**: A scalar (0.0–1.0) indicating sub-goal completion.
-- **`available_actions`**: Dynamically filtered list of valid actions for the current state.
+The environment provides a comprehensive, structured state to the agent at each step:
+- **`task_id`**: String identifier of the current active scenario.
+- **`message`**: Human-readable goal description and current status.
+- **`file_snapshot`**: A JSON-encoded dictionary of all relevant project files and their contents.
+- **`console_output`**: Captured output from executed commands, linters, or test runners.
+- **`progress`**: A float (0.0 to 1.0) indicating overall task completion based on sub-goal success.
+- **`available_actions`**: A list of valid `ActionType` strings the agent can perform.
+- **`step_count`**: Number of steps taken in the current episode.
+- **`reward`**: Immediate scalar feedback from the environment.
 
 ---
 
