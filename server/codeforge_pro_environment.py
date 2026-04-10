@@ -22,6 +22,7 @@ except (ImportError, ValueError):
 
 TASK_DATA = {
     "easy_review": {
+        "name": "Easy: Code Review",
         "difficulty": Difficulty.EASY,
         "desc": "Review small PR for style/security",
         "subgoals": ["identified_security_issue", "added_style_comment"],
@@ -30,6 +31,7 @@ TASK_DATA = {
         "enabled": True
     },
     "medium_triage": {
+        "name": "Medium: Bug Triage",
         "difficulty": Difficulty.MEDIUM,
         "desc": "Triage IndexError in data loader",
         "subgoals": ["found_index_error_line", "isolated_data_source"],
@@ -38,6 +40,7 @@ TASK_DATA = {
         "enabled": True
     },
     "hard_pipeline": {
+        "name": "Hard: Data Pipeline",
         "difficulty": Difficulty.HARD,
         "desc": "Fix failing ETL pipeline (CSV/JSON)",
         "subgoals": ["parsed_csv", "detected_encoding_error", "fixed_transformation"],
@@ -46,6 +49,7 @@ TASK_DATA = {
         "enabled": True
     },
     "expert_refactor": {
+        "name": "Expert: Code Refactor",
         "difficulty": Difficulty.EXPERT,
         "desc": "Refactor legacy async code + add tests",
         "subgoals": ["converted_to_async", "handled_concurrency", "tests_passing"],
@@ -54,6 +58,7 @@ TASK_DATA = {
         "enabled": True
     },
     "pro_deploy": {
+        "name": "Expert: Safe Deployment",
         "difficulty": Difficulty.EXPERT,
         "desc": "Simulate safe deployment with rollback",
         "subgoals": ["checked_health", "staged_blue_green", "verified_metrics"],
@@ -62,6 +67,7 @@ TASK_DATA = {
         "enabled": True
     },
     "security_audit": {
+        "name": "Medium: Security Audit",
         "difficulty": Difficulty.MEDIUM,
         "desc": "Audit config for hardcoded secrets",
         "subgoals": ["identified_secret", "removed_plaintext", "updated_env_var"],
@@ -70,6 +76,7 @@ TASK_DATA = {
         "enabled": True
     },
     "ci_pipeline_fix": {
+        "name": "Hard: CI Pipeline",
         "difficulty": Difficulty.HARD,
         "desc": "Fix broken GitHub Action YAML syntax",
         "subgoals": ["validated_yaml", "fixed_indentation", "set_correct_node_version"],
@@ -78,6 +85,7 @@ TASK_DATA = {
         "enabled": True
     },
     "api_migration": {
+        "name": "Expert: API Migration",
         "difficulty": Difficulty.EXPERT,
         "desc": "Migrate from v1 to v2 internal API",
         "subgoals": ["found_legacy_calls", "implemented_v2_wrapper", "tested_rollback"],
@@ -225,5 +233,14 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
         return self._state
 
     @property
-    def tasks(self) -> list[str]:
-        return list(TASK_DATA.keys())
+    def tasks(self) -> list[dict]:
+        return [
+            {
+                "id": tid,
+                "name": data.get("name", tid.replace("_", " ").title()),
+                "description": data["desc"],
+                "difficulty": data["difficulty"].name.lower() if hasattr(data["difficulty"], "name") else str(data["difficulty"]),
+                "grader": f"server.graders:grade_{tid}"
+            }
+            for tid, data in TASK_DATA.items()
+        ]
