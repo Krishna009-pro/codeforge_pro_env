@@ -26,14 +26,31 @@ app = create_app(
     max_concurrent_envs=1,
 )
 
-# Startup verification: Ensure tasks are discoverable at the class level
-try:
-    tasks = CodeForgeProEnvironment.list_tasks()
-    print(f"DEBUG: Discovery successful. Detected {len(tasks)} tasks.")
-    for t in tasks:
-        print(f" - [TASK] ID={t['id']}, Grader={t.get('grader', 'None')}")
-except Exception as e:
-    print(f"DEBUG: Discovery failed! Error: {e}")
+# --- MANUAL TASK DISCOVERY ENDPOINTS ---
+# Registered to resolve "Not enough tasks with graders" validator errors
+@app.get("/tasks")
+async def get_all_tasks():
+    """Explicitly expose tasks to the platform validator."""
+    return CodeForgeProEnvironment.list_tasks()
+
+@app.get("/v1/tasks")
+async def get_v1_tasks():
+    return CodeForgeProEnvironment.list_tasks()
+
+# --- STARTUP DIAGNOSTICS ---
+@app.on_event("startup")
+async def startup_event():
+    try:
+        # Print all registered routes for debugging
+        print("--- REGISTERED ROUTES ---")
+        for route in app.routes:
+            if hasattr(route, "path"):
+                print(f" - {route.path}")
+                
+        tasks = CodeForgeProEnvironment.list_tasks()
+        print(f"DISCOVERY SUCCESS: Detected {len(tasks)} tasks.")
+    except Exception as e:
+        print(f"DISCOVERY FAILED: {e}")
 
 
 def main(host: str = "0.0.0.0", port: int = 8000):

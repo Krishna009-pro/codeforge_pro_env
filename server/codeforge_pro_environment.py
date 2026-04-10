@@ -198,6 +198,7 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
         # Map task IDs to standalone grader functions
         grader_map = {
             "easy_review": graders.grade_easy_review,
+            "doc_update": graders.grade_doc_update,
             "medium_triage": graders.grade_medium_triage,
             "security_audit": graders.grade_security_audit,
             "hard_pipeline": graders.grade_hard_pipeline,
@@ -205,7 +206,6 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
             "expert_refactor": graders.grade_expert_refactor,
             "pro_deploy": graders.grade_pro_deploy,
             "api_migration": graders.grade_api_migration,
-            "doc_update": graders.grade_doc_update,
         }
         
         grader_func = grader_map.get(task_id)
