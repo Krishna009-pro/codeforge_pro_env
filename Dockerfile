@@ -4,12 +4,13 @@ FROM ghcr.io/meta-pytorch/openenv-base:latest
 # Set working directory
 WORKDIR /app
 
-# Install project dependencies
-COPY pyproject.toml .
-RUN pip install -e .
-
-# Copy the rest of the application
+# Copy the entire project first
+# This is necessary because 'pip install -e .' requires the directories 
+# defined in pyproject.toml to exist (e.g., 'server').
 COPY . .
+
+# Install project dependencies
+RUN pip install -e .
 
 # Expose the port used by the environment
 EXPOSE 8000
