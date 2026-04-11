@@ -37,6 +37,34 @@ async def get_all_tasks():
 async def get_v1_tasks():
     return CodeForgeProEnvironment.list_tasks()
 
+# --- PLATFORM COMPATIBILITY ALIASES ---
+@app.post("/openenv/reset")
+async def openenv_reset(request: dict = None):
+    """Alias for platform compliance."""
+    from openenv.core.env_server.types import ResetRequest
+    from openenv.core.env_server.serialization import serialize_observation
+    req = ResetRequest.model_validate(request or {})
+    env = CodeForgeProEnvironment()
+    try:
+        obs = env.reset(**req.model_dump(exclude_unset=True))
+        return serialize_observation(obs)
+    finally:
+        env.close()
+
+@app.post("/openenv/step")
+async def openenv_step(request: dict):
+    """Alias for platform compliance."""
+    from openenv.core.env_server.types import StepRequest
+    from openenv.core.env_server.serialization import deserialize_action, serialize_observation
+    req = StepRequest.model_validate(request)
+    action = deserialize_action(req.action, CodeForgeAction)
+    env = CodeForgeProEnvironment()
+    try:
+        obs = env.step(action) 
+        return serialize_observation(obs)
+    finally:
+        env.close()
+
 # --- STARTUP DIAGNOSTICS ---
 @app.on_event("startup")
 async def startup_event():
@@ -53,11 +81,18 @@ async def startup_event():
         print(f"DISCOVERY FAILED: {e}")
 
 
-def main(host: str = "0.0.0.0", port: int = 8000):
+def main():
     """Entry point for direct execution."""
     import uvicorn
+    import argparse
+    import os
 
-    uvicorn.run(app, host=host, port=port)
+    parser = argparse.ArgumentParser(description="CodeForge Pro Environment Server")
+    parser.add_argument("--host", default="0.0.0.0", help="Host to bind to")
+    parser.add_argument("--port", type=int, default=int(os.getenv("PORT", 8000)), help="Port to bind to")
+    args = parser.parse_args()
+
+    uvicorn.run(app, host=args.host, port=args.port)
 
 
 if __name__ == "__main__":

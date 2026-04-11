@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 from enum import Enum
 import uuid
 from openenv.core import Action, Observation, State
@@ -35,8 +35,11 @@ class CodeForgeObservation(Observation):
     file_snapshot: str = ""
     console_output: str = ""
     progress: float = Field(0.0, ge=0.0, le=1.0)
+    reward: float = 0.0
+    done: bool = False
     available_actions: List[str]
     step_count: int
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 class CodeForgeState(State):
     episode_id: str = Field(default_factory=lambda: str(uuid.uuid4()))

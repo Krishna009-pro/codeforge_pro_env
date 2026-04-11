@@ -114,6 +114,10 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
         self._state = None
         self.max_steps = self.config.max_steps
 
+    def _clamp_score(self, score: float) -> float:
+        """Ensure scores are strictly between 0 and 1 for the competition validator."""
+        return max(0.01, min(0.99, float(score)))
+
     def reset(self, task_id: str | None = None, **kwargs) -> CodeForgeObservation:
         if task_id is None or task_id not in TASK_DATA:
             task_id = random.choice(list(TASK_DATA.keys()))
@@ -129,6 +133,8 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
             file_snapshot=json.dumps(task_data["files"]),
             console_output="System ready. Start your task.",
             progress=0.0,
+            reward=0.0,
+            done=False,
             available_actions=[a.value for a in ActionType],
             step_count=0
         )
@@ -212,12 +218,13 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
         if not grader_func:
             return 0.0
             
-        return grader_func(
+        grader_score = grader_func(
             final_action.payload, 
             self._state.completed_subgoals, 
             steps=self._state.steps_taken,
             max_steps=self.max_steps
         )
+        return self._clamp_score(grader_score)
 
     def _is_complete(self, action: CodeForgeAction) -> bool:
         task_info = TASK_DATA[self.current_task]
@@ -241,6 +248,8 @@ class CodeForgeProEnvironment(Environment[CodeForgeAction, CodeForgeObservation,
             file_snapshot=json.dumps(task_info["files"]),
             console_output=console,
             progress=progress,
+            reward=0.0,  # Placeholder, updated in step()
+            done=False,  # Placeholder, updated in step()
             available_actions=[a.value for a in ActionType],
             step_count=self._state.steps_taken
         )
